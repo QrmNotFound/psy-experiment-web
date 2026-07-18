@@ -1,0 +1,8 @@
+{
+  "name": "french-judgment-experiment",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  }
+}
