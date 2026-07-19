@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="法语句子正确性判断实验的本地网页原型"
+    />
+    <title>法语句子判断实验</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="site-header">
+        <a class="brand" href="./" aria-label="法语句子判断实验首页">
+          <span class="brand-mark" aria-hidden="true">L</span>
+          <span>
+            <span class="brand-kicker">LANGUAGE &amp; COGNITION LAB</span>
+            <span class="brand-name">句法判断实验</span>
+          </span>
+        </a>
+        <span class="local-badge"><span aria-hidden="true">●</span> 本地原型</span>
+      </header>
+
+      <section id="start-screen" class="screen start-screen" aria-labelledby="page-title">
+        <div class="intro-copy">
+          <p class="eyebrow">FRENCH GRAMMATICALITY JUDGMENT</p>
+          <h1 id="page-title">你觉得这句话<br /><em>对不对？</em></h1>
+          <p class="lead">
+            接下来你会看到一组法语句子。请凭第一反应判断它是否符合标准法语语法。
+          </p>
+          <div class="experiment-note">
+            <span class="note-icon" aria-hidden="true">i</span>
+            <p>页面不会在每题后告诉你答案，请尽量独立完成全部判断。</p>
+          </div>
+          <button id="start-button" class="button button-primary" type="button">
+            开始实验 <span aria-hidden="true">→</span>
+          </button>
+        </div>
+        <aside class="overview-card" aria-label="实验说明">
+          <p class="card-label">实验概览</p>
+          <dl class="overview-list">
+            <div>
+              <dt>题目数量</dt>
+              <dd>08 <span>句</span></dd>
+            </div>
+            <div>
+              <dt>预计用时</dt>
+              <dd>02 <span>分钟</span></dd>
+            </div>
+            <div>
+              <dt>记录内容</dt>
+              <dd>判断 + 反应时间</dd>
+            </div>
+          </dl>
+          <div class="card-footnote">
+            <span class="tiny-dot" aria-hidden="true"></span>
+            数据只保存在当前浏览器中
+          </div>
+        </aside>
+      </section>
+
+      <section id="experiment-screen" class="screen experiment-screen" aria-labelledby="trial-heading" hidden>
+        <div class="trial-topline">
+          <div>
+            <p class="eyebrow">GRAMMATICALITY JUDGMENT</p>
+            <p id="progress-label" class="progress-label">第 01 / 08 题</p>
+          </div>
+          <div class="timer" aria-live="off">
+            <span class="timer-label">本题用时</span>
+            <span id="timer-value">0.0 s</span>
+          </div>
+        </div>
+
+        <div class="progress-track" aria-hidden="true">
+          <span id="progress-bar" class="progress-bar"></span>
+        </div>
+
+        <div class="trial-card">
+          <p class="trial-instruction">请判断下面的法语句子是否正确</p>
+          <h2 id="trial-heading" class="sentence">Je vois le roman que je lis.</h2>
+          <p class="trial-hint">不确定时也请按照第一感觉作答</p>
+        </div>
+
+        <div class="answer-area">
+          <p class="answer-prompt">你的判断是</p>
+          <div class="answer-buttons" role="group" aria-label="句子正确性判断">
+            <button id="correct-button" class="answer-button answer-correct" type="button">
+              <span class="answer-symbol" aria-hidden="true">✓</span>
+              <span>正确</span>
+              <kbd>←</kbd>
+            </button>
+            <button id="incorrect-button" class="answer-button answer-incorrect" type="button">
+              <span class="answer-symbol" aria-hidden="true">×</span>
+              <span>不正确</span>
+              <kbd>→</kbd>
+            </button>
+          </div>
+          <p id="trial-status" class="trial-status" role="status" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section id="result-screen" class="screen result-screen" aria-labelledby="result-title" hidden>
+        <p class="eyebrow">SESSION COMPLETE</p>
+        <h1 id="result-title">判断完成。</h1>
+        <p class="result-lead">下面是这次练习的记录摘要。正式实验可以把 CSV 文件交给研究者分析。</p>
+
+        <div class="result-metrics" aria-label="实验结果摘要">
+          <div class="metric-card metric-highlight">
+            <span class="metric-label">判断准确率</span>
+            <strong id="accuracy-value">—</strong>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">平均反应时间</span>
+            <strong id="average-time-value">—</strong>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">完成题目</span>
+            <strong id="completed-value">—</strong>
+          </div>
+        </div>
+
+        <div class="result-table-wrap">
+          <table>
+            <caption>逐题记录</caption>
+            <thead>
+              <tr>
+                <th scope="col">题号</th>
+                <th scope="col">句子</th>
+                <th scope="col">你的判断</th>
+                <th scope="col">反应时间</th>
+              </tr>
+            </thead>
+            <tbody id="result-rows"></tbody>
+          </table>
+        </div>
+
+        <div class="result-actions">
+          <button id="download-button" class="button button-primary" type="button">下载 CSV 数据 <span aria-hidden="true">↓</span></button>
+          <button id="restart-button" class="button button-secondary" type="button">重新开始</button>
+        </div>
+        <p class="prototype-disclaimer">这是一个本地原型。正式面向受试者使用前，还需要加入知情同意、伦理审批和安全的数据存储。</p>
+      </section>
+
+      <footer class="site-footer">
+        <span>Prototype / 2026</span>
+        <span>French sentence judgment study</span>
+      </footer>
+    </main>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
