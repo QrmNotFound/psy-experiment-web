@@ -33,7 +33,7 @@
           </p>
           <div class="experiment-note">
             <span class="note-icon" aria-hidden="true">i</span>
-            <p>页面不会在每题后告诉你答案，请尽量独立完成全部判断。</p>
+            <p>如果选择“不正确”，还需要判断可能的错误类型；页面不会即时显示答案。</p>
           </div>
           <button id="start-button" class="button button-primary" type="button">
             开始实验 <span aria-hidden="true">→</span>
@@ -52,7 +52,7 @@
             </div>
             <div>
               <dt>记录内容</dt>
-              <dd>判断 + 反应时间</dd>
+              <dd>判断 + 错误定位</dd>
             </div>
           </dl>
           <div class="card-footnote">
@@ -69,7 +69,7 @@
             <p id="progress-label" class="progress-label">第 01 / 08 题</p>
           </div>
           <div class="timer" aria-live="off">
-            <span class="timer-label">本题用时</span>
+            <span id="timer-label" class="timer-label">首次判断用时</span>
             <span id="timer-value">0.0 s</span>
           </div>
         </div>
@@ -100,6 +100,43 @@
           </div>
           <p id="trial-status" class="trial-status" role="status" aria-live="polite"></p>
         </div>
+
+        <section
+          id="diagnosis-panel"
+          class="diagnosis-panel"
+          aria-labelledby="diagnosis-heading"
+          hidden
+        >
+          <div class="diagnosis-heading-group">
+            <div class="diagnosis-meta">
+              <span class="step-chip">附加问题</span>
+              <span>已选择：不正确</span>
+            </div>
+            <h3 id="diagnosis-heading">你认为这句话主要错在哪里？</h3>
+            <p>
+              请选择最接近的原因。如果只是感觉句子有问题，但无法定位，可以选择“不知道”。
+            </p>
+          </div>
+          <div
+            id="diagnosis-options"
+            class="diagnosis-options"
+            role="group"
+            aria-label="错误类型"
+          ></div>
+          <div class="diagnosis-footer">
+            <p id="diagnosis-status" role="status" aria-live="polite">
+              请选择一个选项
+            </p>
+            <button
+              id="diagnosis-submit"
+              class="button button-primary"
+              type="button"
+              disabled
+            >
+              确认并进入下一题 <span aria-hidden="true">→</span>
+            </button>
+          </div>
+        </section>
       </section>
 
       <section id="result-screen" class="screen result-screen" aria-labelledby="result-title" hidden>
@@ -130,6 +167,7 @@
                 <th scope="col">题号</th>
                 <th scope="col">句子</th>
                 <th scope="col">你的判断</th>
+                <th scope="col">错误定位</th>
                 <th scope="col">反应时间</th>
               </tr>
             </thead>
