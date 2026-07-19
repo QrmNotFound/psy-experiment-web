@@ -5,6 +5,7 @@ import {
   isCorrectDiagnosis,
   isCorrectJudgment,
   resultsToCsv,
+  summarizeResults,
 } from "./experiment.js";
 
 const elements = {
@@ -19,6 +20,11 @@ const elements = {
   diagnosisOptions: document.querySelector("#diagnosis-options"),
   diagnosisStatus: document.querySelector("#diagnosis-status"),
   diagnosisSubmit: document.querySelector("#diagnosis-submit"),
+  finishButton: document.querySelector("#finish-button"),
+  finishDialog: document.querySelector("#finish-dialog"),
+  finishDialogDescription: document.querySelector("#finish-dialog-description"),
+  continueButton: document.querySelector("#continue-button"),
+  confirmFinishButton: document.querySelector("#confirm-finish-button"),
   downloadButton: document.querySelector("#download-button"),
   restartButton: document.querySelector("#restart-button"),
   progressLabel: document.querySelector("#progress-label"),
@@ -28,6 +34,8 @@ const elements = {
   timerValue: document.querySelector("#timer-value"),
   trialStatus: document.querySelector("#trial-status"),
   resultTitle: document.querySelector("#result-title"),
+  resultLead: document.querySelector("#result-lead"),
+  resultCaption: document.querySelector("#result-caption"),
   accuracyValue: document.querySelector("#accuracy-value"),
   averageTimeValue: document.querySelector("#average-time-value"),
   completedValue: document.querySelector("#completed-value"),
@@ -97,6 +105,9 @@ function renderQuestion() {
 }
 
 function beginExperiment() {
+  if (elements.finishDialog.open) {
+    elements.finishDialog.close();
+  }
   state.currentIndex = 0;
   state.results = [];
   showScreen(elements.experimentScreen);
@@ -106,10 +117,47 @@ function beginExperiment() {
 function advanceQuestion() {
   state.currentIndex += 1;
   if (state.currentIndex === QUESTIONS.length) {
-    showResults();
+    showResults(false);
   } else {
     renderQuestion();
   }
+}
+
+function openFinishDialog() {
+  const pendingDiagnosis = state.phase === "diagnosis" && state.pendingResult;
+  const recordedCount = state.results.length;
+
+  elements.finishDialogDescription.textContent = pendingDiagnosis
+    ? `目前已完成 ${recordedCount} 题。当前题的“不正确”判断会保留，但尚未选择的错误定位会留空；其余未作答题目不会计入结果。`
+    : `目前已完成 ${recordedCount} 题，其余未作答题目不会计入结果。`;
+  elements.finishDialog.showModal();
+}
+
+function closeFinishDialog() {
+  elements.finishDialog.close();
+  elements.finishButton.focus();
+}
+
+function recordPendingDiagnosisAsIncomplete() {
+  if (state.phase !== "diagnosis" || !state.pendingResult) return;
+
+  const question = QUESTIONS[state.currentIndex];
+  state.results.push({
+    ...state.pendingResult,
+    diagnosis: null,
+    diagnosisKey: question.errorCategory ?? null,
+    diagnosisIsCorrect: null,
+    diagnosisReactionTime: null,
+  });
+  state.pendingResult = null;
+}
+
+function finishExperimentEarly() {
+  if (elements.finishDialog.open) {
+    elements.finishDialog.close();
+  }
+  recordPendingDiagnosisAsIncomplete();
+  showResults(true);
 }
 
 function showDiagnosis() {
@@ -247,22 +295,40 @@ function addResultRow(result) {
   elements.resultRows.append(row);
 }
 
-function showResults() {
+function showResults(endedEarly) {
   stopTimer();
   state.phase = "complete";
   state.pendingResult = null;
   state.answerLocked = true;
 
-  const correctCount = state.results.filter((result) => result.isCorrect).length;
-  const averageTime =
-    state.results.reduce((sum, result) => sum + result.reactionTime, 0) /
-    state.results.length;
+  const summary = summarizeResults(state.results, QUESTIONS.length);
 
-  elements.accuracyValue.textContent = `${Math.round((correctCount / state.results.length) * 100)}%`;
-  elements.averageTimeValue.textContent = formatReactionTime(averageTime);
-  elements.completedValue.textContent = `${state.results.length} / ${QUESTIONS.length}`;
+  elements.resultTitle.textContent = endedEarly ? "本次已结束。" : "判断完成。";
+  elements.resultLead.textContent = endedEarly
+    ? "以下是目前已完成题目的记录摘要。未作答题目不会计入结果，仍可下载 CSV 保存本次数据。"
+    : "下面是这次练习的记录摘要。正式实验可以把 CSV 文件交给研究者分析。";
+  elements.resultCaption.textContent = summary.completedCount
+    ? "逐题记录"
+    : "尚未完成任何题目";
+  elements.accuracyValue.textContent = summary.accuracyPercent == null
+    ? "—"
+    : `${summary.accuracyPercent}%`;
+  elements.averageTimeValue.textContent = summary.averageReactionTime == null
+    ? "—"
+    : formatReactionTime(summary.averageReactionTime);
+  elements.completedValue.textContent = `${summary.completedCount} / ${summary.totalQuestions}`;
   elements.resultRows.replaceChildren();
-  state.results.forEach(addResultRow);
+  if (summary.completedCount === 0) {
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.colSpan = 5;
+    cell.textContent = "本次没有完成任何题目，因此没有可供汇总的判断数据。";
+    row.className = "empty-result-row";
+    row.append(cell);
+    elements.resultRows.append(row);
+  } else {
+    state.results.forEach(addResultRow);
+  }
   showScreen(elements.resultScreen);
   elements.resultTitle.tabIndex = -1;
   elements.resultTitle.focus();
@@ -285,6 +351,9 @@ elements.startButton.addEventListener("click", beginExperiment);
 elements.correctButton.addEventListener("click", () => answerCurrentQuestion("correct"));
 elements.incorrectButton.addEventListener("click", () => answerCurrentQuestion("incorrect"));
 elements.diagnosisSubmit.addEventListener("click", submitDiagnosis);
+elements.finishButton.addEventListener("click", openFinishDialog);
+elements.continueButton.addEventListener("click", closeFinishDialog);
+elements.confirmFinishButton.addEventListener("click", finishExperimentEarly);
 elements.downloadButton.addEventListener("click", downloadResults);
 elements.restartButton.addEventListener("click", beginExperiment);
 renderDiagnosisOptions();

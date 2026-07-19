@@ -68,9 +68,14 @@
             <p class="eyebrow">GRAMMATICALITY JUDGMENT</p>
             <p id="progress-label" class="progress-label">第 01 / 08 题</p>
           </div>
-          <div class="timer" aria-live="off">
-            <span id="timer-label" class="timer-label">首次判断用时</span>
-            <span id="timer-value">0.0 s</span>
+          <div class="trial-actions">
+            <div class="timer" aria-live="off">
+              <span id="timer-label" class="timer-label">首次判断用时</span>
+              <span id="timer-value">0.0 s</span>
+            </div>
+            <button id="finish-button" class="finish-button" type="button">
+              结束本次实验
+            </button>
           </div>
         </div>
 
@@ -142,7 +147,7 @@
       <section id="result-screen" class="screen result-screen" aria-labelledby="result-title" hidden>
         <p class="eyebrow">SESSION COMPLETE</p>
         <h1 id="result-title">判断完成。</h1>
-        <p class="result-lead">下面是这次练习的记录摘要。正式实验可以把 CSV 文件交给研究者分析。</p>
+        <p id="result-lead" class="result-lead">下面是这次练习的记录摘要。正式实验可以把 CSV 文件交给研究者分析。</p>
 
         <div class="result-metrics" aria-label="实验结果摘要">
           <div class="metric-card metric-highlight">
@@ -161,7 +166,7 @@
 
         <div class="result-table-wrap">
           <table>
-            <caption>逐题记录</caption>
+            <caption id="result-caption">逐题记录</caption>
             <thead>
               <tr>
                 <th scope="col">题号</th>
@@ -181,6 +186,22 @@
         </div>
         <p class="prototype-disclaimer">这是一个本地原型。正式面向受试者使用前，还需要加入知情同意、伦理审批和安全的数据存储。</p>
       </section>
+
+      <dialog id="finish-dialog" class="finish-dialog" aria-labelledby="finish-dialog-title">
+        <div class="finish-dialog-content">
+          <p class="eyebrow">END SESSION</p>
+          <h2 id="finish-dialog-title">现在结束本次实验？</h2>
+          <p id="finish-dialog-description"></p>
+          <div class="finish-dialog-note">
+            <span aria-hidden="true">i</span>
+            已完成题目的反应时间和判断会保留，并可在结算页下载 CSV。
+          </div>
+          <div class="finish-dialog-actions">
+            <button id="continue-button" class="button button-secondary" type="button">继续作答</button>
+            <button id="confirm-finish-button" class="button button-danger" type="button">结束并查看结果</button>
+          </div>
+        </div>
+      </dialog>
 
       <footer class="site-footer">
         <span>Prototype / 2026</span>

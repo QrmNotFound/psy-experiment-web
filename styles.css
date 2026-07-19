@@ -236,6 +236,15 @@ h1 em {
   border-color: var(--teal);
 }
 
+.button-danger {
+  color: #fff;
+  background: var(--coral);
+}
+
+.button-danger:hover {
+  background: #b85037;
+}
+
 .overview-card {
   padding: 26px;
   background: rgba(255, 255, 255, 0.8);
@@ -327,6 +336,26 @@ h1 em {
   flex-direction: column;
   align-items: flex-end;
   gap: 4px;
+}
+
+.trial-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 18px;
+}
+
+.finish-button {
+  padding: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+}
+
+.finish-button:hover {
+  color: var(--coral);
 }
 
 .timer-label {
@@ -718,6 +747,83 @@ td:first-child {
   margin-top: 28px;
 }
 
+.empty-result-row td {
+  padding: 28px 20px;
+  color: var(--muted);
+  font-size: 13px;
+  font-style: italic;
+  text-align: center;
+}
+
+.finish-dialog {
+  width: min(100% - 32px, 500px);
+  padding: 0;
+  color: var(--ink);
+  background: var(--surface);
+  border: 0;
+  border-top: 4px solid var(--coral);
+  box-shadow: 0 26px 80px rgba(24, 43, 53, 0.22);
+}
+
+.finish-dialog::backdrop {
+  background: rgba(24, 43, 53, 0.56);
+}
+
+.finish-dialog-content {
+  padding: 32px;
+}
+
+.finish-dialog .eyebrow {
+  margin-bottom: 16px;
+}
+
+.finish-dialog h2 {
+  margin: 0 0 12px;
+  font-family: Georgia, "Songti SC", serif;
+  font-size: 31px;
+  font-weight: 400;
+  letter-spacing: -0.03em;
+}
+
+.finish-dialog p:not(.eyebrow) {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.finish-dialog-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 20px;
+  padding: 13px;
+  color: var(--teal-dark);
+  font-size: 12px;
+  line-height: 1.55;
+  background: var(--teal-soft);
+  border-left: 3px solid var(--teal);
+}
+
+.finish-dialog-note span {
+  display: grid;
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  color: #fff;
+  font-family: Georgia, serif;
+  font-weight: 700;
+  background: var(--teal);
+  border-radius: 50%;
+}
+
+.finish-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 27px;
+}
+
 .prototype-disclaimer {
   margin: 28px 0 0;
   color: var(--muted);
@@ -800,6 +906,22 @@ td:first-child {
   }
 
   .diagnosis-footer .button {
+    width: 100%;
+  }
+
+  .trial-actions {
+    gap: 13px;
+  }
+
+  .finish-dialog-content {
+    padding: 24px;
+  }
+
+  .finish-dialog-actions {
+    flex-direction: column-reverse;
+  }
+
+  .finish-dialog-actions .button {
     width: 100%;
   }
 }
