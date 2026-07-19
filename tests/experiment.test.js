@@ -6,6 +6,7 @@ import {
   isCorrectDiagnosis,
   isCorrectJudgment,
   resultsToCsv,
+  summarizeResults,
 } from "../experiment.js";
 
 test("judgment is correct when the participant matches the answer key", () => {
@@ -26,6 +27,32 @@ test("diagnosis is scored only when the sentence has a known error category", ()
   assert.equal(isCorrectDiagnosis("verb-conjugation", "verb-conjugation"), true);
   assert.equal(isCorrectDiagnosis("word-order", "verb-conjugation"), false);
   assert.equal(isCorrectDiagnosis("unknown", null), null);
+});
+
+test("empty results produce an unfinished but valid session summary", () => {
+  assert.deepEqual(summarizeResults([], 8), {
+    completedCount: 0,
+    accuracyPercent: null,
+    averageReactionTime: null,
+    totalQuestions: 8,
+  });
+});
+
+test("session summary uses only completed trials", () => {
+  const summary = summarizeResults(
+    [
+      { isCorrect: true, reactionTime: 500 },
+      { isCorrect: false, reactionTime: 900 },
+    ],
+    8,
+  );
+
+  assert.deepEqual(summary, {
+    completedCount: 2,
+    accuracyPercent: 50,
+    averageReactionTime: 700,
+    totalQuestions: 8,
+  });
 });
 
 test("results are exported as a CSV with a header row", () => {

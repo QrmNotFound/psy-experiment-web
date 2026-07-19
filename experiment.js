@@ -65,6 +65,31 @@ export function formatReactionTime(milliseconds) {
   return `${Math.round(milliseconds)} ms`;
 }
 
+export function summarizeResults(results, totalQuestions) {
+  const completedCount = results.length;
+  if (completedCount === 0) {
+    return {
+      completedCount,
+      accuracyPercent: null,
+      averageReactionTime: null,
+      totalQuestions,
+    };
+  }
+
+  const correctCount = results.filter((result) => result.isCorrect).length;
+  const totalReactionTime = results.reduce(
+    (sum, result) => sum + result.reactionTime,
+    0,
+  );
+
+  return {
+    completedCount,
+    accuracyPercent: Math.round((correctCount / completedCount) * 100),
+    averageReactionTime: totalReactionTime / completedCount,
+    totalQuestions,
+  };
+}
+
 function escapeCsvValue(value) {
   const text = String(value ?? "");
   return /[",\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
