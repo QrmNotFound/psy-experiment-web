@@ -7,6 +7,7 @@ import {
   formatAnswer,
   formatJudgmentOutcome,
   formatReactionTime,
+  getPostTrialAction,
   isCorrectDiagnosis,
   isCorrectJudgment,
   normalizeParticipantId,
@@ -62,14 +63,20 @@ test("formal sessions require consent and a non-empty participant identifier", (
   );
 });
 
-test("changing a selected judgment preserves the first reaction time", () => {
+test("the first judgment is locked with its original reaction time", () => {
   const firstSelection = selectJudgment(null, "correct", 842);
-  const changedSelection = selectJudgment(firstSelection, "incorrect", 1200);
+  const repeatedSelection = selectJudgment(firstSelection, "incorrect", 1200);
 
-  assert.deepEqual(changedSelection, {
-    judgment: "incorrect",
+  assert.deepEqual(repeatedSelection, {
+    judgment: "correct",
     reactionTime: 842,
   });
+});
+
+test("completed trials advance until the final trial is ready to submit", () => {
+  assert.equal(getPostTrialAction(0, 8), "advance");
+  assert.equal(getPostTrialAction(6, 8), "advance");
+  assert.equal(getPostTrialAction(7, 8), "submit");
 });
 
 test("diagnosis is scored only when the sentence has a known error category", () => {

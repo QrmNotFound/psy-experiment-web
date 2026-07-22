@@ -82,10 +82,16 @@ export function canStartSession({ consentAccepted, participantId }) {
 }
 
 export function selectJudgment(currentSelection, judgment, elapsedTime) {
+  if (currentSelection) return currentSelection;
+
   return {
     judgment,
-    reactionTime: currentSelection?.reactionTime ?? elapsedTime,
+    reactionTime: elapsedTime,
   };
+}
+
+export function getPostTrialAction(currentIndex, totalQuestions) {
+  return currentIndex === totalQuestions - 1 ? "submit" : "advance";
 }
 
 export function createTestParticipantId(date = new Date(), randomValue = Math.random()) {
