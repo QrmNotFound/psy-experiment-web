@@ -69,6 +69,17 @@ export function normalizeParticipantId(value) {
   return String(value ?? "").trim();
 }
 
+export function canStartSession({ consentAccepted, participantId }) {
+  return Boolean(consentAccepted && normalizeParticipantId(participantId));
+}
+
+export function selectJudgment(currentSelection, judgment, elapsedTime) {
+  return {
+    judgment,
+    reactionTime: currentSelection?.reactionTime ?? elapsedTime,
+  };
+}
+
 export function createTestParticipantId(date = new Date(), randomValue = Math.random()) {
   const datePart = date.toISOString().slice(0, 10).replaceAll("-", "");
   const randomPart = Math.floor(randomValue * 36 ** 4)

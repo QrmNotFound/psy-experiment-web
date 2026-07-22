@@ -21,26 +21,60 @@
             <span class="brand-name">句法判断实验</span>
           </span>
         </a>
-        <span class="local-badge"><span aria-hidden="true">●</span> 本地原型</span>
+        <span id="mode-badge" class="local-badge"><span aria-hidden="true">●</span> 正式实验</span>
       </header>
+
+      <div id="test-banner" class="test-banner" role="status" hidden>
+        <strong>测试模式</strong>
+        <span>本次数据将标记为测试，不应纳入正式分析。</span>
+        <span id="test-participant-label"></span>
+      </div>
 
       <section id="start-screen" class="screen start-screen" aria-labelledby="page-title">
         <div class="intro-copy">
-          <p class="eyebrow">FRENCH GRAMMATICALITY JUDGMENT</p>
-          <h1 id="page-title">你觉得这句话<br /><em>对不对？</em></h1>
+          <p class="eyebrow">PARTICIPANT INFORMATION</p>
+          <h1 id="page-title">开始前，<br /><em>请先了解实验。</em></h1>
           <p class="lead">
-            接下来你会看到一组法语句子。请凭第一反应判断它是否符合标准法语语法。
+            你将判断一组法语句子是否符合标准法语语法。整个过程约需 2 分钟，作答期间会在本地记录判断与反应时间。
           </p>
           <div class="experiment-note">
             <span class="note-icon" aria-hidden="true">i</span>
-            <p>如果选择“不正确”，还需要判断可能的错误类型；页面不会即时显示答案。</p>
+            <p>你可以随时结束实验。提前结束时，已完成题目仍可交由研究人员导出，未作答题目不会计入结果。</p>
           </div>
-          <button id="start-button" class="button button-primary" type="button">
-            开始实验 <span aria-hidden="true">→</span>
-          </button>
+
+          <form id="consent-form" class="consent-form" novalidate>
+            <div class="field-group">
+              <label for="participant-id">匿名参与者编号</label>
+              <input
+                id="participant-id"
+                name="participant-id"
+                type="text"
+                maxlength="40"
+                autocomplete="off"
+                placeholder="请输入研究人员提供的编号"
+                aria-describedby="participant-help"
+              />
+              <p id="participant-help" class="field-help">请勿填写姓名、邮箱或其他身份信息。</p>
+            </div>
+            <label class="consent-check" for="consent-checkbox">
+              <input id="consent-checkbox" type="checkbox" />
+              <span>我已阅读实验说明，自愿参加，并知道可以随时退出。</span>
+            </label>
+            <p id="start-status" class="form-status" role="alert"></p>
+            <button id="start-button" class="button button-primary" type="submit">
+              同意并开始 <span aria-hidden="true">→</span>
+            </button>
+          </form>
         </div>
-        <aside class="overview-card" aria-label="实验说明">
-          <p class="card-label">实验概览</p>
+        <aside class="overview-card consent-card" aria-labelledby="consent-title">
+          <p class="card-label">知情同意模板</p>
+          <h2 id="consent-title">你的参与完全自愿</h2>
+          <div class="consent-copy">
+            <p><strong>研究目的</strong>：了解人们如何判断法语句子的语法结构。</p>
+            <p><strong>记录内容</strong>：匿名编号、判断选择、错误类型与反应时间。</p>
+            <p><strong>数据处理</strong>：数据只保存在当前浏览器，需由研究人员手动导出。</p>
+            <p><strong>退出权利</strong>：你可以随时结束，不会受到任何不利影响。</p>
+          </div>
           <dl class="overview-list">
             <div>
               <dt>题目数量</dt>
@@ -57,7 +91,7 @@
           </dl>
           <div class="card-footnote">
             <span class="tiny-dot" aria-hidden="true"></span>
-            数据只保存在当前浏览器中
+            正式使用前请替换为伦理审批通过的文本和研究者联系方式
           </div>
         </aside>
       </section>
@@ -69,9 +103,9 @@
             <p id="progress-label" class="progress-label">第 01 / 08 题</p>
           </div>
           <div class="trial-actions">
-            <div class="timer" aria-live="off">
-              <span id="timer-label" class="timer-label">首次判断用时</span>
-              <span id="timer-value">0.0 s</span>
+            <div class="timer" aria-label="反应时间正在后台记录">
+              <span class="recording-dot" aria-hidden="true"></span>
+              <span id="timer-label">正在记录反应时间</span>
             </div>
             <button id="finish-button" class="finish-button" type="button">
               结束本次实验
@@ -103,7 +137,12 @@
               <kbd>→</kbd>
             </button>
           </div>
-          <p id="trial-status" class="trial-status" role="status" aria-live="polite"></p>
+          <div class="answer-confirm-row">
+            <p id="trial-status" class="trial-status" role="status" aria-live="polite">请选择一个答案</p>
+            <button id="answer-confirm" class="button button-primary" type="button" disabled>
+              确认答案 <span aria-hidden="true">→</span>
+            </button>
+          </div>
         </div>
 
         <section
@@ -147,44 +186,67 @@
       <section id="result-screen" class="screen result-screen" aria-labelledby="result-title" hidden>
         <p class="eyebrow">SESSION COMPLETE</p>
         <h1 id="result-title">判断完成。</h1>
-        <p id="result-lead" class="result-lead">下面是这次练习的记录摘要。正式实验可以把 CSV 文件交给研究者分析。</p>
+        <p id="result-lead" class="result-lead">感谢你的参与。本次实验记录已经在当前页面完成。</p>
 
-        <div class="result-metrics" aria-label="实验结果摘要">
-          <div class="metric-card metric-highlight">
-            <span class="metric-label">判断准确率</span>
-            <strong id="accuracy-value">—</strong>
-          </div>
-          <div class="metric-card">
-            <span class="metric-label">平均反应时间</span>
-            <strong id="average-time-value">—</strong>
-          </div>
-          <div class="metric-card">
-            <span class="metric-label">完成题目</span>
-            <strong id="completed-value">—</strong>
+        <div class="participant-summary" aria-label="完成状态">
+          <span class="completion-symbol" aria-hidden="true">✓</span>
+          <div>
+            <span>已完成题目</span>
+            <strong id="participant-completed-value">—</strong>
           </div>
         </div>
 
-        <div class="result-table-wrap">
-          <table>
-            <caption id="result-caption">逐题记录</caption>
-            <thead>
-              <tr>
-                <th scope="col">题号</th>
-                <th scope="col">句子</th>
-                <th scope="col">你的判断</th>
-                <th scope="col">错误定位</th>
-                <th scope="col">反应时间</th>
-              </tr>
-            </thead>
-            <tbody id="result-rows"></tbody>
-          </table>
+        <div class="result-actions participant-actions">
+          <button id="restart-button" class="button button-secondary" type="button">返回开始页</button>
         </div>
 
-        <div class="result-actions">
-          <button id="download-button" class="button button-primary" type="button">下载 CSV 数据 <span aria-hidden="true">↓</span></button>
-          <button id="restart-button" class="button button-secondary" type="button">重新开始</button>
-        </div>
-        <p class="prototype-disclaimer">这是一个本地原型。正式面向受试者使用前，还需要加入知情同意、伦理审批和安全的数据存储。</p>
+        <details id="researcher-details" class="researcher-details">
+          <summary>研究人员查看与导出</summary>
+          <div class="researcher-content">
+            <p class="researcher-note">此区域仅用于减少受试者误触，不提供身份验证或数据安全保护。</p>
+            <div class="session-identity">
+              <span>参与者编号</span>
+              <strong id="result-participant-id">—</strong>
+              <span>会话类型</span>
+              <strong id="result-session-mode">—</strong>
+            </div>
+            <div class="result-metrics" aria-label="实验结果摘要">
+              <div class="metric-card metric-highlight">
+                <span class="metric-label">判断准确率</span>
+                <strong id="accuracy-value">—</strong>
+              </div>
+              <div class="metric-card">
+                <span class="metric-label">平均反应时间</span>
+                <strong id="average-time-value">—</strong>
+              </div>
+              <div class="metric-card">
+                <span class="metric-label">完成题目</span>
+                <strong id="completed-value">—</strong>
+              </div>
+            </div>
+
+            <div class="result-table-wrap">
+              <table>
+                <caption id="result-caption">逐题记录</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">题号</th>
+                    <th scope="col">句子</th>
+                    <th scope="col">你的判断</th>
+                    <th scope="col">错误定位</th>
+                    <th scope="col">反应时间</th>
+                  </tr>
+                </thead>
+                <tbody id="result-rows"></tbody>
+              </table>
+            </div>
+
+            <div class="result-actions">
+              <button id="download-button" class="button button-primary" type="button">下载 CSV 数据 <span aria-hidden="true">↓</span></button>
+            </div>
+          </div>
+        </details>
+        <p class="prototype-disclaimer">数据不会自动上传。请在关闭页面前由研究人员完成导出。</p>
       </section>
 
       <dialog id="finish-dialog" class="finish-dialog" aria-labelledby="finish-dialog-title">
@@ -205,7 +267,7 @@
 
       <footer class="site-footer">
         <span>Prototype / 2026</span>
-        <span>French sentence judgment study</span>
+        <button id="test-mode-button" class="footer-action" type="button">进入测试模式</button>
       </footer>
     </main>
 

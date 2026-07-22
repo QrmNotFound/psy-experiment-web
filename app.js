@@ -1,10 +1,14 @@
 import {
   DIAGNOSIS_OPTIONS,
   QUESTIONS,
+  canStartSession,
+  createTestParticipantId,
   formatReactionTime,
   isCorrectDiagnosis,
   isCorrectJudgment,
+  normalizeParticipantId,
   resultsToCsv,
+  selectJudgment,
   summarizeResults,
 } from "./experiment.js";
 
@@ -12,9 +16,18 @@ const elements = {
   startScreen: document.querySelector("#start-screen"),
   experimentScreen: document.querySelector("#experiment-screen"),
   resultScreen: document.querySelector("#result-screen"),
+  consentForm: document.querySelector("#consent-form"),
   startButton: document.querySelector("#start-button"),
+  participantId: document.querySelector("#participant-id"),
+  consentCheckbox: document.querySelector("#consent-checkbox"),
+  startStatus: document.querySelector("#start-status"),
+  testModeButton: document.querySelector("#test-mode-button"),
+  testBanner: document.querySelector("#test-banner"),
+  testParticipantLabel: document.querySelector("#test-participant-label"),
+  modeBadge: document.querySelector("#mode-badge"),
   correctButton: document.querySelector("#correct-button"),
   incorrectButton: document.querySelector("#incorrect-button"),
+  answerConfirm: document.querySelector("#answer-confirm"),
   answerArea: document.querySelector(".answer-area"),
   diagnosisPanel: document.querySelector("#diagnosis-panel"),
   diagnosisOptions: document.querySelector("#diagnosis-options"),
@@ -31,7 +44,6 @@ const elements = {
   progressBar: document.querySelector("#progress-bar"),
   sentence: document.querySelector("#trial-heading"),
   timerLabel: document.querySelector("#timer-label"),
-  timerValue: document.querySelector("#timer-value"),
   trialStatus: document.querySelector("#trial-status"),
   resultTitle: document.querySelector("#result-title"),
   resultLead: document.querySelector("#result-lead"),
@@ -39,6 +51,10 @@ const elements = {
   accuracyValue: document.querySelector("#accuracy-value"),
   averageTimeValue: document.querySelector("#average-time-value"),
   completedValue: document.querySelector("#completed-value"),
+  participantCompletedValue: document.querySelector("#participant-completed-value"),
+  resultParticipantId: document.querySelector("#result-participant-id"),
+  resultSessionMode: document.querySelector("#result-session-mode"),
+  researcherDetails: document.querySelector("#researcher-details"),
   resultRows: document.querySelector("#result-rows"),
 };
 
@@ -46,11 +62,13 @@ const state = {
   currentIndex: 0,
   results: [],
   trialStartedAt: 0,
-  timerId: null,
-  answerLocked: false,
   phase: "judgment",
   pendingResult: null,
   selectedDiagnosis: null,
+  selectedJudgment: null,
+  participantId: "",
+  sessionMode: "formal",
+  consentAccepted: false,
 };
 
 const diagnosisLabels = new Map(
@@ -65,53 +83,101 @@ function showScreen(screenToShow) {
   );
 }
 
-function updateTimer() {
-  const elapsed = performance.now() - state.trialStartedAt;
-  elements.timerValue.textContent = `${(elapsed / 1000).toFixed(1)} s`;
-}
-
-function stopTimer() {
-  if (state.timerId !== null) {
-    window.clearInterval(state.timerId);
-    state.timerId = null;
-  }
-}
-
 function startTimer() {
-  stopTimer();
   state.trialStartedAt = performance.now();
-  updateTimer();
-  state.timerId = window.setInterval(updateTimer, 100);
 }
 
 function renderQuestion() {
   const question = QUESTIONS[state.currentIndex];
   const questionNumber = String(state.currentIndex + 1).padStart(2, "0");
 
-  state.answerLocked = false;
   state.phase = "judgment";
   state.pendingResult = null;
   state.selectedDiagnosis = null;
+  state.selectedJudgment = null;
   elements.answerArea.hidden = false;
   elements.diagnosisPanel.hidden = true;
-  elements.timerLabel.textContent = "首次判断用时";
+  elements.timerLabel.textContent = "正在记录反应时间";
   elements.progressLabel.textContent = `第 ${questionNumber} / ${String(QUESTIONS.length).padStart(2, "0")} 题`;
   elements.progressBar.style.width = `${((state.currentIndex + 1) / QUESTIONS.length) * 100}%`;
   elements.sentence.textContent = question.sentence;
-  elements.timerValue.textContent = "0.0 s";
-  elements.trialStatus.textContent = "";
+  elements.trialStatus.textContent = "请选择一个答案";
+  elements.answerConfirm.disabled = true;
+  [elements.correctButton, elements.incorrectButton].forEach((button) =>
+    button.setAttribute("aria-pressed", "false"),
+  );
   startTimer();
   elements.correctButton.focus();
 }
 
-function beginExperiment() {
+function beginExperiment(event) {
+  event?.preventDefault();
+  const participantId = normalizeParticipantId(elements.participantId.value);
+  const consentAccepted = elements.consentCheckbox.checked;
+
+  if (!canStartSession({ consentAccepted, participantId })) {
+    elements.startStatus.textContent = participantId
+      ? "请勾选知情同意后再开始。"
+      : "请输入匿名参与者编号。";
+    (participantId ? elements.consentCheckbox : elements.participantId).focus();
+    return;
+  }
+
   if (elements.finishDialog.open) {
     elements.finishDialog.close();
   }
+  state.participantId = participantId;
+  state.consentAccepted = consentAccepted;
   state.currentIndex = 0;
   state.results = [];
+  elements.startStatus.textContent = "";
+  elements.researcherDetails.open = false;
   showScreen(elements.experimentScreen);
   renderQuestion();
+}
+
+function setSessionMode(mode) {
+  state.sessionMode = mode;
+  const isTest = mode === "test";
+
+  if (isTest) {
+    state.participantId = createTestParticipantId();
+    elements.participantId.value = state.participantId;
+  } else {
+    state.participantId = "";
+    elements.participantId.value = "";
+  }
+
+  elements.participantId.readOnly = isTest;
+  elements.testBanner.hidden = !isTest;
+  elements.testParticipantLabel.textContent = isTest
+    ? `编号：${state.participantId}`
+    : "";
+  elements.modeBadge.innerHTML = `<span aria-hidden="true">●</span> ${isTest ? "测试模式" : "正式实验"}`;
+  elements.testModeButton.textContent = isTest ? "退出测试模式" : "进入测试模式";
+  elements.startStatus.textContent = "";
+}
+
+function toggleTestMode() {
+  setSessionMode(state.sessionMode === "formal" ? "test" : "formal");
+  elements.participantId.focus();
+}
+
+function returnToStart() {
+  state.results = [];
+  state.consentAccepted = false;
+  state.selectedJudgment = null;
+  elements.consentCheckbox.checked = false;
+  elements.researcherDetails.open = false;
+
+  if (state.sessionMode === "test") {
+    setSessionMode("test");
+  } else {
+    elements.participantId.value = "";
+  }
+
+  showScreen(elements.startScreen);
+  elements.participantId.focus();
 }
 
 function advanceQuestion() {
@@ -127,9 +193,13 @@ function openFinishDialog() {
   const pendingDiagnosis = state.phase === "diagnosis" && state.pendingResult;
   const recordedCount = state.results.length;
 
-  elements.finishDialogDescription.textContent = pendingDiagnosis
-    ? `目前已完成 ${recordedCount} 题。当前题的“不正确”判断会保留，但尚未选择的错误定位会留空；其余未作答题目不会计入结果。`
-    : `目前已完成 ${recordedCount} 题，其余未作答题目不会计入结果。`;
+  if (pendingDiagnosis) {
+    elements.finishDialogDescription.textContent = `目前已完成 ${recordedCount} 题。当前题的“不正确”判断会保留，但尚未选择的错误定位会留空；其余未作答题目不会计入结果。`;
+  } else if (state.phase === "judgment" && state.selectedJudgment) {
+    elements.finishDialogDescription.textContent = `目前已完成 ${recordedCount} 题。当前题尚未确认，因此不会计入结果；其余未作答题目也不会计入。`;
+  } else {
+    elements.finishDialogDescription.textContent = `目前已完成 ${recordedCount} 题，其余未作答题目不会计入结果。`;
+  }
   elements.finishDialog.showModal();
 }
 
@@ -167,7 +237,7 @@ function showDiagnosis() {
   elements.diagnosisPanel.hidden = false;
   elements.diagnosisSubmit.disabled = true;
   elements.diagnosisStatus.textContent = "请选择一个选项";
-  elements.timerLabel.textContent = "附加判断用时";
+  elements.timerLabel.textContent = "正在记录附加判断时间";
   elements.diagnosisOptions
     .querySelectorAll(".diagnosis-option")
     .forEach((button) => button.setAttribute("aria-pressed", "false"));
@@ -175,15 +245,34 @@ function showDiagnosis() {
   elements.diagnosisOptions.querySelector(".diagnosis-option")?.focus();
 }
 
-function answerCurrentQuestion(judgment) {
-  if (state.answerLocked || state.phase !== "judgment") return;
+function selectCurrentJudgment(judgment) {
+  if (state.phase !== "judgment") return;
 
-  state.answerLocked = true;
-  stopTimer();
+  state.selectedJudgment = selectJudgment(
+    state.selectedJudgment,
+    judgment,
+    performance.now() - state.trialStartedAt,
+  );
+  elements.correctButton.setAttribute(
+    "aria-pressed",
+    String(judgment === "correct"),
+  );
+  elements.incorrectButton.setAttribute(
+    "aria-pressed",
+    String(judgment === "incorrect"),
+  );
+  elements.answerConfirm.disabled = false;
+  elements.trialStatus.textContent = `已选择：${judgment === "correct" ? "正确" : "不正确"}`;
+}
+
+function confirmCurrentJudgment() {
+  if (state.phase !== "judgment" || !state.selectedJudgment) return;
 
   const question = QUESTIONS[state.currentIndex];
-  const reactionTime = performance.now() - state.trialStartedAt;
+  const { judgment, reactionTime } = state.selectedJudgment;
   const result = {
+    participantId: state.participantId,
+    sessionMode: state.sessionMode,
     trial: state.currentIndex + 1,
     sentence: question.sentence,
     judgment,
@@ -232,7 +321,6 @@ function submitDiagnosis() {
     return;
   }
 
-  stopTimer();
   const question = QUESTIONS[state.currentIndex];
   const diagnosisReactionTime = performance.now() - state.trialStartedAt;
   state.results.push({
@@ -296,17 +384,16 @@ function addResultRow(result) {
 }
 
 function showResults(endedEarly) {
-  stopTimer();
   state.phase = "complete";
   state.pendingResult = null;
-  state.answerLocked = true;
+  state.selectedJudgment = null;
 
   const summary = summarizeResults(state.results, QUESTIONS.length);
 
   elements.resultTitle.textContent = endedEarly ? "本次已结束。" : "判断完成。";
   elements.resultLead.textContent = endedEarly
-    ? "以下是目前已完成题目的记录摘要。未作答题目不会计入结果，仍可下载 CSV 保存本次数据。"
-    : "下面是这次练习的记录摘要。正式实验可以把 CSV 文件交给研究者分析。";
+    ? "本次实验已提前结束。已完成题目会保留，未作答题目不会计入结果。"
+    : "感谢你的参与。本次实验记录已经在当前页面完成。";
   elements.resultCaption.textContent = summary.completedCount
     ? "逐题记录"
     : "尚未完成任何题目";
@@ -317,6 +404,10 @@ function showResults(endedEarly) {
     ? "—"
     : formatReactionTime(summary.averageReactionTime);
   elements.completedValue.textContent = `${summary.completedCount} / ${summary.totalQuestions}`;
+  elements.participantCompletedValue.textContent = `${summary.completedCount} / ${summary.totalQuestions}`;
+  elements.resultParticipantId.textContent = state.participantId;
+  elements.resultSessionMode.textContent = state.sessionMode === "test" ? "测试" : "正式";
+  elements.researcherDetails.open = false;
   elements.resultRows.replaceChildren();
   if (summary.completedCount === 0) {
     const row = document.createElement("tr");
@@ -342,20 +433,22 @@ function downloadResults() {
   const date = new Date().toISOString().slice(0, 10);
 
   link.href = url;
-  link.download = `french-judgment-results-${date}.csv`;
+  link.download = `french-judgment-${state.participantId}-${date}.csv`;
   link.click();
   URL.revokeObjectURL(url);
 }
 
-elements.startButton.addEventListener("click", beginExperiment);
-elements.correctButton.addEventListener("click", () => answerCurrentQuestion("correct"));
-elements.incorrectButton.addEventListener("click", () => answerCurrentQuestion("incorrect"));
+elements.consentForm.addEventListener("submit", beginExperiment);
+elements.testModeButton.addEventListener("click", toggleTestMode);
+elements.correctButton.addEventListener("click", () => selectCurrentJudgment("correct"));
+elements.incorrectButton.addEventListener("click", () => selectCurrentJudgment("incorrect"));
+elements.answerConfirm.addEventListener("click", confirmCurrentJudgment);
 elements.diagnosisSubmit.addEventListener("click", submitDiagnosis);
 elements.finishButton.addEventListener("click", openFinishDialog);
 elements.continueButton.addEventListener("click", closeFinishDialog);
 elements.confirmFinishButton.addEventListener("click", finishExperimentEarly);
 elements.downloadButton.addEventListener("click", downloadResults);
-elements.restartButton.addEventListener("click", beginExperiment);
+elements.restartButton.addEventListener("click", returnToStart);
 renderDiagnosisOptions();
 
 document.addEventListener("keydown", (event) => {
@@ -363,11 +456,16 @@ document.addEventListener("keydown", (event) => {
 
   if (event.key === "ArrowLeft") {
     event.preventDefault();
-    answerCurrentQuestion("correct");
+    selectCurrentJudgment("correct");
   }
 
   if (event.key === "ArrowRight") {
     event.preventDefault();
-    answerCurrentQuestion("incorrect");
+    selectCurrentJudgment("incorrect");
+  }
+
+  if (event.key === "Enter" && state.selectedJudgment) {
+    event.preventDefault();
+    confirmCurrentJudgment();
   }
 });

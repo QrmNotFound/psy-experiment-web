@@ -2,12 +2,14 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  canStartSession,
   createTestParticipantId,
   formatReactionTime,
   isCorrectDiagnosis,
   isCorrectJudgment,
   normalizeParticipantId,
   resultsToCsv,
+  selectJudgment,
   summarizeResults,
 } from "../experiment.js";
 
@@ -34,6 +36,31 @@ test("test participant identifiers are recognizable and deterministic", () => {
     createTestParticipantId(new Date("2026-07-22T08:00:00Z"), 0.25),
     "TEST-20260722-9000",
   );
+});
+
+test("formal sessions require consent and a non-empty participant identifier", () => {
+  assert.equal(
+    canStartSession({ consentAccepted: true, participantId: " P-018 " }),
+    true,
+  );
+  assert.equal(
+    canStartSession({ consentAccepted: false, participantId: "P-018" }),
+    false,
+  );
+  assert.equal(
+    canStartSession({ consentAccepted: true, participantId: "   " }),
+    false,
+  );
+});
+
+test("changing a selected judgment preserves the first reaction time", () => {
+  const firstSelection = selectJudgment(null, "correct", 842);
+  const changedSelection = selectJudgment(firstSelection, "incorrect", 1200);
+
+  assert.deepEqual(changedSelection, {
+    judgment: "incorrect",
+    reactionTime: 842,
+  });
 });
 
 test("diagnosis is scored only when the sentence has a known error category", () => {
