@@ -123,64 +123,58 @@
           <p class="trial-hint">不确定时也请按照第一感觉作答</p>
         </div>
 
-        <div class="answer-area">
-          <p class="answer-prompt">你的判断是</p>
-          <div class="answer-buttons" role="group" aria-label="句子正确性判断">
-            <button id="correct-button" class="answer-button answer-correct" type="button">
-              <span class="answer-symbol" aria-hidden="true">✓</span>
-              <span>正确</span>
-              <kbd>←</kbd>
-            </button>
-            <button id="incorrect-button" class="answer-button answer-incorrect" type="button">
-              <span class="answer-symbol" aria-hidden="true">×</span>
-              <span>不正确</span>
-              <kbd>→</kbd>
-            </button>
+        <div class="response-stage">
+          <div class="answer-area">
+            <p class="answer-prompt">你的判断是</p>
+            <div class="answer-buttons" role="group" aria-label="句子正确性判断">
+              <button id="correct-button" class="answer-button answer-correct" type="button">
+                <span class="answer-symbol" aria-hidden="true">✓</span>
+                <span>正确</span>
+                <kbd>←</kbd>
+              </button>
+              <button id="incorrect-button" class="answer-button answer-incorrect" type="button">
+                <span class="answer-symbol" aria-hidden="true">×</span>
+                <span>不正确</span>
+                <kbd>→</kbd>
+              </button>
+            </div>
+            <p id="trial-status" class="trial-status response-status" role="status" aria-live="polite">请选择一个答案；点击后将立即记录且不能修改</p>
           </div>
-          <div class="answer-confirm-row">
-            <p id="trial-status" class="trial-status" role="status" aria-live="polite">请选择一个答案</p>
-            <button id="answer-confirm" class="button button-primary" type="button" disabled>
-              确认答案 <span aria-hidden="true">→</span>
+
+          <section
+            id="diagnosis-panel"
+            class="diagnosis-panel"
+            aria-labelledby="diagnosis-heading"
+            hidden
+          >
+            <div class="diagnosis-heading-group">
+              <div class="diagnosis-meta">
+                <span class="step-chip">附加问题</span>
+                <span>判断已锁定：不正确</span>
+              </div>
+              <h3 id="diagnosis-heading">你认为主要错在哪里？</h3>
+            </div>
+            <div
+              id="diagnosis-options"
+              class="diagnosis-options"
+              role="group"
+              aria-label="错误类型"
+            ></div>
+            <p id="diagnosis-status" class="response-status" role="status" aria-live="polite">
+              请选择最接近的错误类型；点击后将立即记录
+            </p>
+          </section>
+
+          <div id="submit-ready" class="submit-ready" hidden>
+            <div>
+              <strong>所有答案已锁定</strong>
+              <p>请提交本次实验，提交后将进入完成页。</p>
+            </div>
+            <button id="submit-session-button" class="button button-primary" type="button">
+              提交实验 <span aria-hidden="true">→</span>
             </button>
           </div>
         </div>
-
-        <section
-          id="diagnosis-panel"
-          class="diagnosis-panel"
-          aria-labelledby="diagnosis-heading"
-          hidden
-        >
-          <div class="diagnosis-heading-group">
-            <div class="diagnosis-meta">
-              <span class="step-chip">附加问题</span>
-              <span>已选择：不正确</span>
-            </div>
-            <h3 id="diagnosis-heading">你认为这句话主要错在哪里？</h3>
-            <p>
-              请选择最接近的原因。如果只是感觉句子有问题，但无法定位，可以选择“不知道”。
-            </p>
-          </div>
-          <div
-            id="diagnosis-options"
-            class="diagnosis-options"
-            role="group"
-            aria-label="错误类型"
-          ></div>
-          <div class="diagnosis-footer">
-            <p id="diagnosis-status" role="status" aria-live="polite">
-              请选择一个选项
-            </p>
-            <button
-              id="diagnosis-submit"
-              class="button button-primary"
-              type="button"
-              disabled
-            >
-              确认并进入下一题 <span aria-hidden="true">→</span>
-            </button>
-          </div>
-        </section>
       </section>
 
       <section id="result-screen" class="screen result-screen" aria-labelledby="result-title" hidden>
@@ -253,12 +247,12 @@
 
       <dialog id="finish-dialog" class="finish-dialog" aria-labelledby="finish-dialog-title">
         <div class="finish-dialog-content">
-          <p class="eyebrow">END SESSION</p>
+          <p id="finish-dialog-kicker" class="eyebrow">END SESSION</p>
           <h2 id="finish-dialog-title">现在结束本次实验？</h2>
           <p id="finish-dialog-description"></p>
           <div class="finish-dialog-note">
             <span aria-hidden="true">i</span>
-            已完成题目的反应时间和判断会保留，并可在结算页下载 CSV。
+            <span id="finish-dialog-note-text">已完成题目的反应时间和判断会保留，并可在结算页下载 CSV。</span>
           </div>
           <div class="finish-dialog-actions">
             <button id="continue-button" class="button button-secondary" type="button">继续作答</button>
