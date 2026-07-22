@@ -17,7 +17,6 @@ const elements = {
   experimentScreen: document.querySelector("#experiment-screen"),
   resultScreen: document.querySelector("#result-screen"),
   consentForm: document.querySelector("#consent-form"),
-  startButton: document.querySelector("#start-button"),
   participantId: document.querySelector("#participant-id"),
   consentCheckbox: document.querySelector("#consent-checkbox"),
   startStatus: document.querySelector("#start-status"),
@@ -132,6 +131,7 @@ function beginExperiment(event) {
   state.results = [];
   elements.startStatus.textContent = "";
   elements.researcherDetails.open = false;
+  elements.testModeButton.hidden = true;
   showScreen(elements.experimentScreen);
   renderQuestion();
 }
@@ -176,6 +176,7 @@ function returnToStart() {
     elements.participantId.value = "";
   }
 
+  elements.testModeButton.hidden = false;
   showScreen(elements.startScreen);
   elements.participantId.focus();
 }
