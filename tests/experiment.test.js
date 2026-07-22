@@ -4,6 +4,8 @@ import assert from "node:assert/strict";
 import {
   canStartSession,
   createTestParticipantId,
+  formatAnswer,
+  formatJudgmentOutcome,
   formatReactionTime,
   isCorrectDiagnosis,
   isCorrectJudgment,
@@ -25,6 +27,13 @@ test("judgment is incorrect when the participant disagrees with the answer key",
 
 test("reaction time is displayed in milliseconds", () => {
   assert.equal(formatReactionTime(842.7), "843 ms");
+});
+
+test("researcher results clearly label the answer key and judgment outcome", () => {
+  assert.equal(formatAnswer(true), "正确");
+  assert.equal(formatAnswer(false), "不正确");
+  assert.equal(formatJudgmentOutcome(true), "✓ 判断正确");
+  assert.equal(formatJudgmentOutcome(false), "× 判断错误");
 });
 
 test("formal participant identifiers are trimmed", () => {

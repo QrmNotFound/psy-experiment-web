@@ -912,6 +912,21 @@ th {
   text-transform: uppercase;
 }
 
+.result-outcome {
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.result-outcome.is-correct {
+  color: var(--teal-dark);
+  background: var(--teal-soft);
+}
+
+.result-outcome.is-incorrect {
+  color: var(--coral-dark);
+  background: var(--coral-soft);
+}
+
 .researcher-content .result-actions {
   justify-content: flex-end;
   margin-top: 20px;

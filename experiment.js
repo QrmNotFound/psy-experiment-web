@@ -65,6 +65,14 @@ export function formatReactionTime(milliseconds) {
   return `${Math.round(milliseconds)} ms`;
 }
 
+export function formatAnswer(answer) {
+  return answer ? "正确" : "不正确";
+}
+
+export function formatJudgmentOutcome(isCorrect) {
+  return isCorrect ? "✓ 判断正确" : "× 判断错误";
+}
+
 export function normalizeParticipantId(value) {
   return String(value ?? "").trim();
 }

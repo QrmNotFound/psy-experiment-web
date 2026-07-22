@@ -3,6 +3,8 @@ import {
   QUESTIONS,
   canStartSession,
   createTestParticipantId,
+  formatAnswer,
+  formatJudgmentOutcome,
   formatReactionTime,
   isCorrectDiagnosis,
   isCorrectJudgment,
@@ -367,17 +369,23 @@ function renderDiagnosisOptions() {
 
 function addResultRow(result) {
   const row = document.createElement("tr");
-  const values = [
-    result.trial,
-    result.sentence,
-    result.judgment === "correct" ? "正确" : "不正确",
-    result.diagnosis ? diagnosisLabels.get(result.diagnosis) : "—",
-    formatReactionTime(result.reactionTime),
+  const cells = [
+    { value: result.trial },
+    { value: result.sentence },
+    { value: result.judgment === "correct" ? "正确" : "不正确" },
+    { value: formatAnswer(result.answer) },
+    {
+      value: formatJudgmentOutcome(result.isCorrect),
+      className: `result-outcome ${result.isCorrect ? "is-correct" : "is-incorrect"}`,
+    },
+    { value: result.diagnosis ? diagnosisLabels.get(result.diagnosis) : "—" },
+    { value: formatReactionTime(result.reactionTime) },
   ];
 
-  values.forEach((value) => {
+  cells.forEach(({ value, className }) => {
     const cell = document.createElement("td");
     cell.textContent = value;
+    if (className) cell.className = className;
     row.append(cell);
   });
 
@@ -413,7 +421,7 @@ function showResults(endedEarly) {
   if (summary.completedCount === 0) {
     const row = document.createElement("tr");
     const cell = document.createElement("td");
-    cell.colSpan = 5;
+    cell.colSpan = 7;
     cell.textContent = "本次没有完成任何题目，因此没有可供汇总的判断数据。";
     row.className = "empty-result-row";
     row.append(cell);
