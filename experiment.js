@@ -65,6 +65,20 @@ export function formatReactionTime(milliseconds) {
   return `${Math.round(milliseconds)} ms`;
 }
 
+export function normalizeParticipantId(value) {
+  return String(value ?? "").trim();
+}
+
+export function createTestParticipantId(date = new Date(), randomValue = Math.random()) {
+  const datePart = date.toISOString().slice(0, 10).replaceAll("-", "");
+  const randomPart = Math.floor(randomValue * 36 ** 4)
+    .toString(36)
+    .padStart(4, "0")
+    .toUpperCase();
+
+  return `TEST-${datePart}-${randomPart}`;
+}
+
 export function summarizeResults(results, totalQuestions) {
   const completedCount = results.length;
   if (completedCount === 0) {
@@ -97,9 +111,11 @@ function escapeCsvValue(value) {
 
 export function resultsToCsv(results) {
   const header =
-    "trial,sentence,judgment,answer_key,is_correct,reaction_time_ms,diagnosis,diagnosis_key,diagnosis_is_correct,diagnosis_reaction_time_ms";
+    "participant_id,session_mode,trial,sentence,judgment,answer_key,is_correct,reaction_time_ms,diagnosis,diagnosis_key,diagnosis_is_correct,diagnosis_reaction_time_ms";
   const rows = results.map((result) =>
     [
+      result.participantId,
+      result.sessionMode,
       result.trial,
       result.sentence,
       result.judgment,

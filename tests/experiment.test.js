@@ -2,9 +2,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  createTestParticipantId,
   formatReactionTime,
   isCorrectDiagnosis,
   isCorrectJudgment,
+  normalizeParticipantId,
   resultsToCsv,
   summarizeResults,
 } from "../experiment.js";
@@ -21,6 +23,17 @@ test("judgment is incorrect when the participant disagrees with the answer key",
 
 test("reaction time is displayed in milliseconds", () => {
   assert.equal(formatReactionTime(842.7), "843 ms");
+});
+
+test("formal participant identifiers are trimmed", () => {
+  assert.equal(normalizeParticipantId("  P-018  "), "P-018");
+});
+
+test("test participant identifiers are recognizable and deterministic", () => {
+  assert.equal(
+    createTestParticipantId(new Date("2026-07-22T08:00:00Z"), 0.25),
+    "TEST-20260722-9000",
+  );
 });
 
 test("diagnosis is scored only when the sentence has a known error category", () => {
@@ -58,6 +71,8 @@ test("session summary uses only completed trials", () => {
 test("results are exported as a CSV with a header row", () => {
   const csv = resultsToCsv([
     {
+      participantId: "P-018",
+      sessionMode: "formal",
       trial: 1,
       sentence: "Les filles mange une pomme.",
       judgment: "incorrect",
@@ -74,8 +89,8 @@ test("results are exported as a CSV with a header row", () => {
   assert.equal(
     csv,
     [
-      "trial,sentence,judgment,answer_key,is_correct,reaction_time_ms,diagnosis,diagnosis_key,diagnosis_is_correct,diagnosis_reaction_time_ms",
-      "1,Les filles mange une pomme.,incorrect,false,true,842,verb-conjugation,verb-conjugation,true,615",
+      "participant_id,session_mode,trial,sentence,judgment,answer_key,is_correct,reaction_time_ms,diagnosis,diagnosis_key,diagnosis_is_correct,diagnosis_reaction_time_ms",
+      "P-018,formal,1,Les filles mange une pomme.,incorrect,false,true,842,verb-conjugation,verb-conjugation,true,615",
     ].join("\n"),
   );
 });
